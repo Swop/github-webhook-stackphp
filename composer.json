@@ -1,0 +1,35 @@
+{
+    "name": "swop/stack-github-webhook",
+    "license": "MIT",
+    "type": "library",
+    "description": "Stack middleware to restrict application access to GitHub Event bot with signed payload",
+    "keywords": [
+        "stack",
+        "github",
+        "stack middleware",
+        "webhook"
+    ],
+    "authors": [
+        {
+            "name": "Sylvain Mauduit",
+            "email": "swop@swop.io",
+            "homepage": "https://github.com/Swop"
+        }
+    ],
+    "require": {
+        "symfony/http-foundation": "~2.1",
+        "symfony/http-kernel": "~2.1",
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Swop\\Stack\\": "src/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
