@@ -1,5 +1,7 @@
 # Github WebHook Stack middleware
 
+![Travis status](http://img.shields.io/travis/Swop/stack-github-webhook.svg) ![Packagist version](http://img.shields.io/packagist/v/Swop/stack-github-webhook.svg)
+
 [Stack](http://stackphp.com) middleware to restrict application access to GitHub Event bot with signed payload.
 
 Every incoming request will have its X-Hub-Signature header checked in order to see if the request was originally performed by GitHub.
