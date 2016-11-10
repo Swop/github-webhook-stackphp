@@ -1,19 +1,60 @@
 language: php
 
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
 php:
   - 5.3.3
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
   - hhvm
+  - nightly
 
-before_script:
-  - composer self-update
-  - composer install --no-interaction --prefer-source
-
-script: phpunit --coverage-text
+env:
+  global:
+    - SYMFONY_VERSION=""
 
 matrix:
+  fast_finish: true
+  include:
+    - php: 7.0
+      env: SYMFONY_VERSION="2.1.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.2.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.3.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.4.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.5.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.6.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.7.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="2.8.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="3.0.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="3.1.*"
+    - php: 7.0
+      env: SYMFONY_VERSION="dev-master"
   allow_failures:
     - php: hhvm
-  fast_finish: true
+    - php: nightly
+    - env: SYMFONY_VERSION="dev-master"
+
+before_install:
+  - composer selfupdate
+  - if [ "$SYMFONY_VERSION" != "" ]; then composer require --dev --no-update symfony/http-foundation:$SYMFONY_VERSION symfony/http-kernel:$SYMFONY_VERSION; fi
+
+install:
+  - composer install --no-interaction --prefer-source
+
+script:
+  - bin/phpunit --coverage-text
