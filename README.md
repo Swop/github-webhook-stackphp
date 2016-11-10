@@ -49,6 +49,7 @@ $kernel->loadClassCache();
 
 $stack = (new Stack\Builder())
     ->push('Swop\Stack\GitHubWebHook', 'MyGitHubWebhookSecret')
+;
 
 $kernel = $stack->resolve($kernel);
 
@@ -63,12 +64,8 @@ $kernel->terminate($request, $response);
 
 The recommended way to install this library is through [Composer](http://getcomposer.org/):
 
-``` json
-{
-    "require": {
-        "swop/stack-github-webhook": "~1.0"
-    }
-}
+```
+composer require "swop/stack-github-webhook"
 ```
 
 ## License
