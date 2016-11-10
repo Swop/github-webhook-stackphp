@@ -1,65 +1,34 @@
 <?php
 namespace Swop\Stack;
 
-use PHPUnit_Framework_MockObject_MockObject;
-use Symfony\Component\HttpFoundation\HeaderBag;
+use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class GitHubWebHookTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var  PHPUnit_Framework_MockObject_MockObject|Request */
-    private $requestStub;
-    /** @var  PHPUnit_Framework_MockObject_MockObject|HeaderBag */
-    private $headerBagStub;
-    /** @var  PHPUnit_Framework_MockObject_MockObject|Response */
-    private $responseStub;
-    /** @var  PHPUnit_Framework_MockObject_MockObject|HttpKernelInterface */
-    private $kernelStub;
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setUp()
-    {
-        $this->requestStub = $this->getMockBuilder('Symfony\Component\HttpFoundation\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->headerBagStub = $this->getMockBuilder('Symfony\Component\HttpFoundation\HeaderBag')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->requestStub->headers = $this->headerBagStub;
-//        $this->requestStub->expects($this->at(0))
-//            ->method('__get')
-//            ->with($this->equalTo('headers'))
-//            ->will($this->returnValue($this->headerBagStub));
-
-        $this->responseStub = $this->getMockBuilder('Symfony\Component\HttpFoundation\Response')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->kernelStub = $this->getMock('Symfony\Component\HttpKernel\HttpKernelInterface');
-    }
-
     /**
      * @dataProvider correctSignatures
      */
     public function testCorrectSignature($requestContent, $requestSignature, $gitHubWebHookSecret)
     {
-        $this->configureHeaderBagStub($requestSignature);
-        $this->configureRequestStub($requestContent);
+        $request = $this->createRequest($requestSignature, $requestContent);
+        $expectedResponse = new Response();
 
-        $this->kernelStub->expects($this->once())
-            ->method('handle')
-            ->will($this->returnValue($this->responseStub));
+        $kernel = $this->prophesize('Symfony\Component\HttpKernel\HttpKernelInterface');
+        $kernel->handle(
+            Argument::is($request),
+            HttpKernelInterface::MASTER_REQUEST,
+            true
+        )
+            ->shouldBeCalledTimes(1)
+            ->willReturn($expectedResponse);
 
-        $stackGitHubWebHook = new GitHubWebHook($this->kernelStub, $gitHubWebHookSecret);
-        $response = $stackGitHubWebHook->handle($this->requestStub);
+        $stackGitHubWebHook = new GitHubWebHook($kernel->reveal(), $gitHubWebHookSecret);
+        $response = $stackGitHubWebHook->handle($request);
 
-        $this->assertEquals($response, $this->responseStub);
+        $this->assertEquals($expectedResponse, $response);
     }
 
     /**
@@ -67,17 +36,16 @@ class GitHubWebHookTest extends \PHPUnit_Framework_TestCase
      */
     public function testIncorrectSignature($requestContent, $requestSignature, $gitHubWebHookSecret)
     {
-        $this->configureHeaderBagStub($requestSignature);
-        $this->configureRequestStub($requestContent);
+        $request = $this->createRequest($requestSignature, $requestContent);
 
-        $this->kernelStub->expects($this->never())
-            ->method('handle');
+        $kernel = $this->prophesize('Symfony\Component\HttpKernel\HttpKernelInterface');
+        $kernel->handle(Argument::any())->shouldNotBeCalled();
 
-        $stackGitHubWebHook = new GitHubWebHook($this->kernelStub, $gitHubWebHookSecret);
-        $response = $stackGitHubWebHook->handle($this->requestStub);
+        $stackGitHubWebHook = new GitHubWebHook($kernel->reveal(), $gitHubWebHookSecret);
+        $response = $stackGitHubWebHook->handle($request);
 
         $this->assertEquals(401, $response->getStatusCode());
-        $this->assertEquals(array('error' => 401, 'message' => 'Unauthorized'), json_decode($response->getContent(), true));
+        $this->assertEquals(json_encode(array('error' => 401, 'message' => 'Unauthorized')), $response->getContent());
     }
 
     public function correctSignatures()
@@ -102,18 +70,22 @@ class GitHubWebHookTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function configureHeaderBagStub($requestSignature)
+    /**
+     * @param string $requestSignature
+     * @param string $requestContent
+     *
+     * @return Request
+     */
+    private function createRequest($requestSignature, $requestContent)
     {
-        $this->headerBagStub->expects($this->once())
-            ->method('get')
-            ->with($this->equalTo('X-Hub-Signature'))
-            ->will($this->returnValue($requestSignature));
-    }
-
-    private function configureRequestStub($requestContent)
-    {
-        $this->requestStub->expects($this->any())
-            ->method('getContent')
-            ->will($this->returnValue($requestContent));
+        return Request::create(
+            '/webhook',
+            'GET',
+            array(),
+            array(),
+            array(),
+            array('HTTP_X_Hub_Signature' => $requestSignature),
+            $requestContent
+        );
     }
 }
