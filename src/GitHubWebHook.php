@@ -39,8 +39,8 @@ class GitHubWebHook implements HttpKernelInterface
     {
         if (!$this->isSignatureValid($request)) {
             return new JsonResponse(
-                array('error' => Response::HTTP_UNAUTHORIZED, 'message' => 'Unauthorized'),
-                Response::HTTP_UNAUTHORIZED
+                array('error' => 401, 'message' => 'Unauthorized'),
+                401
             );
         }
 
