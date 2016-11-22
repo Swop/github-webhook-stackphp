@@ -1,41 +1,44 @@
 {
-    "name": "swop/stack-github-webhook",
+    "name": "swop/github-webhook-stackphp",
     "license": "MIT",
     "type": "library",
-    "description": "Stack middleware to restrict application access to GitHub Event bot with signed payload",
+    "description": "Stack middleware which will verify if the incoming GitHub web hook request is correctly signed.",
     "keywords": [
         "stack",
         "github",
         "stack middleware",
-        "webhook"
+        "webhook",
+        "middleware",
+        "security"
     ],
     "authors": [
         {
             "name": "Sylvain Mauduit",
-            "email": "swop@swop.io",
+            "email": "sylvain@mauduit.fr",
             "homepage": "https://github.com/Swop"
         }
     ],
     "require": {
-        "php": ">=5.3.3",
-        "symfony/http-foundation": "^2.1|^3.0",
-        "symfony/http-kernel": "^2.1|^3.0",
-        "stack/builder": "^1.0"
+        "php": ">=5.4",
+        "symfony/http-foundation": "^2.3|^3.0",
+        "symfony/http-kernel": "^2.3|^3.0",
+        "stack/builder": "^1.0",
+        "symfony/psr-http-message-bridge": "^1.0",
+        "zendframework/zend-diactoros": "^1.3",
+        "http-interop/http-middleware": "^0.2.1",
+        "swop/github-webhook-middleware": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.5.0"
     },
     "autoload": {
         "psr-4": {
-            "Swop\\Stack\\": "src/"
+            "Swop\\GitHubWebHookStackPHP\\": "src/"
         }
-    },
-    "config": {
-        "bin-dir": "bin"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.1.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     }
 }

@@ -6,7 +6,7 @@
     bootstrap     = "tests/bootstrap.php" >
 
     <testsuites>
-        <testsuite name="GitHub Web Hook Test Suite">
+        <testsuite name="GitHub Web Hook StackPHP Middleware Test Suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>

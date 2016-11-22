@@ -2,34 +2,39 @@
 /*
  * This file licensed under the MIT license.
  *
- * (c) Sylvain Mauduit <swop@swop.io>
+ * (c) Sylvain Mauduit <sylvain@mauduit.fr>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Swop\Stack;
+namespace Swop\GitHubWebHookStackPHP;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Swop\GitHubWebHook\Security\SignatureValidator;
+use Swop\GitHubWebHookMiddleware\GithubWebHook as GithubWebHookMiddleware;
+use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * This class offers a StackPHP middleware which could be used to verify that a request coming from GitHub
+ * in a web hook context contains proper signature based on the provided secret.
+ *
+ * @author Sylvain Mauduit <sylvain@mauduit.fr>
+ */
 class GitHubWebHook implements HttpKernelInterface
 {
     /** @var HttpKernelInterface */
-    private $kernel;
-    /** @var string */
-    private $gitHubWebHookSecret;
+    private $next;
 
     /**
-     * @param HttpKernelInterface $kernel              Application kernel
-     * @param string              $gitHubWebHookSecret GitHub secret key configured in the WebHook
+     * @param HttpKernelInterface $next   Next middleware
+     * @param string              $secret GitHub web hook secret
      */
-    public function __construct(HttpKernelInterface $kernel, $gitHubWebHookSecret)
+    public function __construct(HttpKernelInterface $next, $secret)
     {
-        $this->kernel              = $kernel;
-        $this->gitHubWebHookSecret = $gitHubWebHookSecret;
+        $this->next = $this->createBridge($next, $secret);
     }
 
     /**
@@ -37,30 +42,33 @@ class GitHubWebHook implements HttpKernelInterface
      */
     public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = true)
     {
-        if (!$this->isSignatureValid($request)) {
-            return new JsonResponse(
-                array('error' => 401, 'message' => 'Unauthorized'),
-                401
-            );
-        }
-
-        return $this->kernel->handle($request, $type, $catch);
+        return $this->next->handle($request, $type, $catch);
     }
+//
+//    /**
+//     * @param HttpKernelInterface $next   Next middleware
+//     * @param string              $secret GitHub web hook secret
+//     *
+//     * @return $this
+//     */
+//    static public function create(HttpKernelInterface $next, $secret)
+//    {
+//        return new self($next, $secret);
+//    }
 
-    private function isSignatureValid(Request $request)
+    /**
+     * @param HttpKernelInterface $next
+     * @param string              $secret
+     *
+     * @return HttpKernelInterface
+     */
+    private function createBridge(HttpKernelInterface $next, $secret)
     {
-        $hubSignature = $request->headers->get('X-Hub-Signature');
-        $explodeResult = explode('=', $hubSignature, 2);
-
-        if (2 !== count($explodeResult)) {
-            return false;
-        }
-
-        list($algorithm, $hash) = $explodeResult;
-        $payload = $request->getContent();
-
-        $payloadHash = hash_hmac($algorithm, $payload, $this->gitHubWebHookSecret);
-
-        return $hash === $payloadHash;
+        return new Psr7MiddlewareBridge(
+            $next,
+            new GithubWebHookMiddleware(new SignatureValidator(), $secret),
+            new DiactorosFactory(),
+            new HttpFoundationFactory()
+        );
     }
 }
