@@ -2,7 +2,7 @@ Github WebHook Stack middleware
 ==================
 
 [![Build
-Status](https://secure.travis-ci.org/Swop/github-webhook-stack.png?branch=master)](http://travis-ci.org/Swop/github-webhook-stack)
+Status](https://secure.travis-ci.org/Swop/github-webhook-stackphp.png?branch=master)](http://travis-ci.org/Swop/github-webhook-stackphp)
 
 [Stack](http://stackphp.com) middleware to restrict application access to GitHub Event bot with signed payload.
 
@@ -15,7 +15,7 @@ Installation
 The recommended way to install this library is through [Composer](https://getcomposer.org/):
 
 ```
-composer require "swop/github-webhook-stack"
+composer require "swop/github-webhook-stackphp"
 ```
 
 Usage
@@ -75,7 +75,7 @@ $kernel->terminate($request, $response);
 Contributing
 ------------
 
-See [CONTRIBUTING](https://github.com/Swop/github-webhook-stack.png/blob/master/CONTRIBUTING.md) file.
+See [CONTRIBUTING](https://github.com/Swop/github-webhook-stackphp.png/blob/master/CONTRIBUTING.md) file.
 
 Original Credits
 ------------
@@ -86,4 +86,4 @@ Original Credits
 License
 ------------
 
-This library is released under the MIT license. See the complete license in the bundled [LICENSE](https://github.com/Swop/github-webhook-stack.png/blob/master/LICENSE) file.
+This library is released under the MIT license. See the complete license in the bundled [LICENSE](https://github.com/Swop/github-webhook-stackphp.png/blob/master/LICENSE) file.
